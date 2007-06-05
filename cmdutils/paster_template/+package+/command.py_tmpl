@@ -6,13 +6,22 @@ description = """\
 """
 
 parser = OptionParser(
-    version_package={{repr(project)}},
+    usage="%prog [OPTIONS] ARGS",
+    version_package=${repr(project)},
     description=description,
     ## Set these to require a minimum or maximum number of arguments:
     #max_args=None,
     #min_args=None,
     ## Set this to true to create a logger:
     #use_logging=False,
+    )
+
+#parser.add_option(
+#    '-s', '--long',
+#    help="help message",
+#    metavar="VAR_NAME",
+#    dest="options_var",
+#    )
 
 @main_func(parser)
 def main(options, args):

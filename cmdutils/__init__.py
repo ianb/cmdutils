@@ -65,7 +65,7 @@ class OptionParser(optparse.OptionParser):
 
     def get_default_values(self):
         values = optparse.OptionParser.get_default_values(self)
-        values = CmdValues(values)
+        values = CmdValues(values.__dict__)
         return values
 
     def parse_args(self, args=None, values=None):

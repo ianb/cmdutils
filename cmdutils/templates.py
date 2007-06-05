@@ -16,7 +16,7 @@ class CmdTemplate(Template):
         setup_py = os.path.join(output_dir, 'setup.py')
         command.insert_into_file(setup_py,
                                  'Entry points',
-                                 '%(package)s = %(package)s.command:main\n' % vars),
+                                 '%(package)s = %(package)s.command:main\n' % vars,
                                  indent=True)
         command.insert_into_file(setup_py,
                                  'Entry points',
