@@ -8,7 +8,12 @@ setup(name='CmdUtils',
       description="Routines to help make command-line utilities easier to write",
       long_description="""\
 """,
-      classifiers=[], # Get strings from http://www.python.org/pypi?%3Aaction=list_classifiers
+      classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Environment :: Console',
+      ],
       keywords='command line option parsing optparse',
       author='Ian Bicking',
       author_email='ianb@colorstudy.com',
@@ -21,6 +26,7 @@ setup(name='CmdUtils',
           # -*- Extra requirements: -*-
       ],
       entry_points="""
-      # -*- Entry points: -*-
+      [paste.paster_create_template]
+      cmdutils = cmdutils.templates:CmdTemplate
       """,
       )

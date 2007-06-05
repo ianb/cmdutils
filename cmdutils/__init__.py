@@ -16,7 +16,7 @@ class OptionParser(optparse.OptionParser):
     def __init__(self,
                  usage=None,
                  option_list=None,
-                 option_class=Option,
+                 option_class=optparse.Option,
                  version=None,
                  version_package=None,
                  conflict_handler="error",
@@ -66,6 +66,7 @@ class OptionParser(optparse.OptionParser):
     def get_default_values(self):
         values = optparse.OptionParser.get_default_values(self)
         values = CmdValues(values)
+        return values
 
     def parse_args(self, args=None, values=None):
         options, args = optparse.OptionParser.parse_args(self, args, values)
@@ -119,8 +120,9 @@ class CmdValues(optparse.Values):
             logger.consumers.append((Logger.LEVELS[-1], f))
         return logger
 
-def run_main(main, parser):
-    args = sys.argv[1:]
+def run_main(main, parser, args=None):
+    if args is None:
+        args = sys.argv[1:]
     try:
         options, args = parser.parse_args(args)
         result = main(options, args)
@@ -138,4 +140,17 @@ def run_main(main, parser):
     if result:
         sys.exit(result)
 
-    
+def main_func(parser):
+    """
+    Use like::
+
+        @main_func(parser)
+        def main(options, args):
+            ...
+    """
+    def decorator(func):
+        def main(args=None):
+            run_main(func, parser, args)
+        return main
+    return decorator
+
