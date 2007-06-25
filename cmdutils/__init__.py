@@ -49,11 +49,13 @@ class OptionParser(optparse.OptionParser):
             '-v', '--verbose',
             dest="verbosity",
             help="Make the command more verbose (use multiple times to increase verbosity)",
+            default=0,
             action="count")
         if add_quiet:
             self.add_option(
                 '-q', '--quiet',
                 dest="quietness",
+                default=0,
                 help="Make the command quieter (use multiple times to increase quietness)",
                 action="count")
         if add_log:
@@ -104,12 +106,11 @@ class CmdValues(optparse.Values):
 
     def _create_logger(self):
         logger = Logger([])
-        consumers = []
         verbosity = 2 # NOTIFY
-        verbosity += getattr(self, 'verbosity', 0)
-        verbosity -= getattr(self, 'quietness', 0)
+        verbosity -= getattr(self, 'verbosity', 0)
+        verbosity += getattr(self, 'quietness', 0)
         level = Logger.level_for_integer(verbosity)
-        consumers.append((level, sys.stdout))
+        logger.consumers.append((level, sys.stdout))
         if getattr(self, 'log_file', None):
             log_file = self.log_file
             log_dir = os.path.dirname(os.path.abspath(log_file))

@@ -23,6 +23,9 @@ parser = OptionParser(
 #    dest="options_var",
 #    )
 
+## Use this with use_logging, or generally to have an options.verbose:
+#parser.add_verbose()
+
 @main_func(parser)
 def main(options, args):
     ## Do stuff here; raise CommandError if the arguments don't make
