@@ -1,4 +1,5 @@
 import logging
+import sys
 
 class Logger(object):
 
@@ -20,6 +21,7 @@ class Logger(object):
                  logging_name=None):
         self.consumers = consumers
         self.indent = 0
+        self.level_adjust = 0
         self.in_progress = None
         self.in_progress_hanging = False
         self.send_to_logging = send_to_logging
@@ -46,6 +48,19 @@ class Logger(object):
     def fatal(self, msg, *args, **kw):
         self.log(self.FATAL, msg, *args, **kw)
     def log(self, level, msg, *args, **kw):
+        if self.level_adjust:
+            try:
+                index = self.LEVELS.index(level)
+            except ValueError:
+                pass
+            else:
+                index += self.level_adjust
+                if index >= len(self.LEVELS):
+                    level = self.LEVELS[-1]
+                elif index < 0:
+                    level = self.LEVELS[0]
+                else:
+                    level = self.LEVELS[index]
         if args:
             if kw:
                 raise TypeError(
