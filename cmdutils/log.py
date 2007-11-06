@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 
 class Logger(object):
 
@@ -8,6 +9,7 @@ class Logger(object):
     levels, to avoid some redundancy of displayed information.
     """
 
+    VERBOSE_DEBUG = logging.DEBUG-10
     DEBUG = logging.DEBUG
     INFO = logging.INFO
     NOTIFY = (logging.INFO+logging.WARN)/2
@@ -15,7 +17,7 @@ class Logger(object):
     ERROR = logging.ERROR
     FATAL = logging.FATAL
 
-    LEVELS = [DEBUG, INFO, NOTIFY, WARN, ERROR, FATAL]
+    LEVELS = [VERBOSE_DEBUG, DEBUG, INFO, NOTIFY, WARN, ERROR, FATAL]
 
     def __init__(self, consumers, send_to_logging=False,
                  logging_name=None):
@@ -34,6 +36,43 @@ class Logger(object):
                 self.logger = None
         else:
             self.logger = logging_name
+        self.section = None
+        self._added_consumers = False
+        
+
+    def set_section(self, section):
+        self.section = section
+        self._section_logs = []
+        self._section_color_logs = []
+        if not self._added_consumers:
+            self.consumers.append((self.VERBOSE_DEBUG, self._append_section))
+            self.consumers.append((self.VERBOSE_DEBUG, self._append_section_color))
+            self._added_consumers = True
+
+    def remove_section(self):
+        self.section = None
+        self._section_logs = self._section_color_logs = None
+        ## FIXME: should remove consumers
+
+    def section_text(self, color=None):
+        if not self.section:
+            return
+        if color is None:
+            color = self.supports_color(sys.stdout)
+        if color:
+            logs = self._section_color_logs
+        else:
+            logs = self._section_logs
+        return '\n'.join(logs)
+
+    def _append_section(self, msg):
+        if self.section:
+            self._section_logs.append(msg)
+
+    def _append_section_color(self, msg):
+        if self.section:
+            self._section_color_logs.append(msg)
+    _append_section_color.color = True
 
     def debug(self, msg, *args, **kw):
         self.log(self.DEBUG, msg, *args, **kw)
@@ -48,19 +87,11 @@ class Logger(object):
     def fatal(self, msg, *args, **kw):
         self.log(self.FATAL, msg, *args, **kw)
     def log(self, level, msg, *args, **kw):
-        if self.level_adjust:
-            try:
-                index = self.LEVELS.index(level)
-            except ValueError:
-                pass
-            else:
-                index += self.level_adjust
-                if index >= len(self.LEVELS):
-                    level = self.LEVELS[-1]
-                elif index < 0:
-                    level = self.LEVELS[0]
-                else:
-                    level = self.LEVELS[index]
+        if 'color' in kw:
+            color = kw.pop('color')
+        else:
+            color = None
+        level = self.adjusted_level(level)
         if args:
             if kw:
                 raise TypeError(
@@ -79,20 +110,40 @@ class Logger(object):
                         rendered = msg % args
                     else:
                         rendered = msg
-                    rendered = ' '*self.indent + rendered
+                    rendered = self.indented(rendered)
+                cons_rendered = rendered
+                if color and self.supports_color(consumer):
+                    cons_rendered = self.colorize(cons_rendered, color)
                 if hasattr(consumer, 'write'):
-                    consumer.write(rendered+'\n')
+                    consumer.write(cons_rendered+'\n')
                 else:
-                    consumer(rendered)
+                    consumer(cons_rendered)
         if self.send_to_logging:
             self.logger.log(level, msg, *args, **kw)
+
+    def adjusted_level(self, level):
+        if not self.level_adjust:
+            return level
+        if isinstance(level, tuple):
+            return tuple(map(self.adjust_level, level))
+        try:
+            index = self.LEVELS.index(level)
+        except ValueError:
+            return level
+        index += self.level_adjust
+        if index >= len(self.LEVELS):
+            return self.LEVELS[-1]
+        elif index < 0:
+            return self.LEVELS[0]
+        else:
+            return self.LEVELS[index]
 
     def start_progress(self, msg):
         assert not self.in_progress, (
             "Tried to start_progress(%r) while in_progress %r"
             % (msg, self.in_progress))
         if self.level_matches(self.NOTIFY, self._stdout_level()):
-            sys.stdout.write(msg)
+            sys.stdout.write(' '*self.indent+msg)
             sys.stdout.flush()
             self.in_progress_hanging = True
         else:
@@ -105,7 +156,7 @@ class Logger(object):
         if self.stdout_level_matches(self.NOTIFY):
             if not self.in_progress_hanging:
                 # Some message has been printed out since start_progress
-                sys.stdout.write('...' + self.in_progress + msg + '\n')
+                sys.stdout.write(' '*self.indent + '...' + self.in_progress + msg + '\n')
                 sys.stdout.flush()
             else:
                 sys.stdout.write(msg + '\n')
@@ -167,3 +218,66 @@ class Logger(object):
         return levels[level]
 
     level_for_integer = classmethod(level_for_integer)
+
+    def supports_color(self, consumer):
+        if getattr(consumer, 'color', False):
+            return True
+        try:
+            isatty = getattr(consumer, 'isatty')()
+        except AttributeError:
+            return False
+        if not isatty:
+            return False
+        ## FIXME: this is a lame test
+        return os.environ.get('LSCOLORS') or os.environ.get('LS_COLORS')
+
+    def colorize(self, msg, color):
+        msg = string_to_ansi(color) + msg + string_to_ansi('reset')
+        return msg
+
+    def indented(self, text):
+        if not self.indent:
+            return text
+        lines = text.splitlines(True)
+        return ''.join([(' '*self.indent)+line for line in lines])
+
+ansi_codes = dict(
+    reset=0,
+    bold=1,
+    italic=3,
+    underline=4,
+    inverse=7,
+    strike=9,
+    bold_off=22,
+    italic_off=23,
+    underline_off=24,
+    strike_off=29,
+    black=30,
+    red=31,
+    green=32,
+    yellow=33,
+    blue=34,
+    magenta=35,
+    cyan=36,
+    white=37,
+    default_color=39,
+    black_bg=40,
+    red_bg=41,
+    green_bg=42,
+    yellow_bg=43,
+    blue_bg=44,
+    magenta_bg=45,
+    cyan_bg=46,
+    white_bg=47,
+    default_bg=49,
+    )
+
+def string_to_ansi(string):
+    parts = string.split()
+    codes = []
+    for part in parts:
+        if part not in ansi_codes:
+            raise ValueError(
+                "Bad code: %r" % part)
+        codes.append(ansi_codes[part])
+    return '\033[%sm' % ';'.join(map(str, codes))
