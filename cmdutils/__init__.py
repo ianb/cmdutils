@@ -8,7 +8,7 @@ class CommandError(Exception):
     user.
     """
     def __init__(self, msg, show_usage=True):
-        self.msg = msg
+        Exception.__init__(self, msg)
         self.show_usage = show_usage
 
 class OptionParser(optparse.OptionParser):
@@ -106,7 +106,7 @@ class CmdValues(optparse.Values):
 
     def _create_logger(self):
         logger = Logger([])
-        verbosity = 2 # NOTIFY
+        verbosity = Logger.LEVELS.index(Logger.NOTIFY)
         verbosity -= getattr(self, 'verbosity', 0)
         verbosity += getattr(self, 'quietness', 0)
         level = Logger.level_for_integer(verbosity)
