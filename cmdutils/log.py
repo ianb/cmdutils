@@ -229,7 +229,9 @@ class Logger(object):
         if not isatty:
             return False
         ## FIXME: this is a lame test
-        return os.environ.get('LSCOLORS') or os.environ.get('LS_COLORS')
+        return (os.environ.get('LSCOLORS') or os.environ.get('LS_COLORS')
+                or os.environ.get('COLORTERM') or os.environ.get('CLICOLOR')
+                or 'color' in os.environ.get('TERM', '').lower())
 
     def colorize(self, msg, color):
         msg = string_to_ansi(color) + msg + string_to_ansi('reset')
