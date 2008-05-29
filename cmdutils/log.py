@@ -1,3 +1,7 @@
+"""
+Logging package intended to be used for output from command-line programs
+"""
+
 import logging
 import sys
 import os
@@ -7,6 +11,29 @@ class Logger(object):
     """
     Logging object for use in command-line script.  Allows ranges of
     levels, to avoid some redundancy of displayed information.
+
+    The normal levels from `logging` are provided, and in addition the
+    levels `NOTIFY` (between `INFO` and `WARN`) and `VERBOSE_DEBUG`
+    (more verbose than `DEBUG`).  All the levels are kept in order in
+    `LEVELS`, and are:
+
+    `VERBOSE_DEBUG`: very verbose messages
+    `DEBUG`: debug messages
+    `INFO`: informational messages (typical default is not to display)
+    `NOTIFY`: more useful information messages (typical default IS to display)
+    `WARN`, `WARNING`: warning
+    `ERROR`: an error
+    `FATAL`: a bad error
+
+    Instances contain a list of `consumers`, ``[(level, consumer)]``
+    where all messages at ``level`` or above will be sent to the
+    consumer.  Consumers can either be functions or file-like
+    objects.  (Note: newlines are sent to file-like objects, but not
+    to functions.)
+
+    Messages may also be sent to the standard `logging` facilities,
+    but setting `send_to_logging` to True (and optionally giving the
+    `logger_name` to indicate which logger to send messages to).
     """
 
     VERBOSE_DEBUG = logging.DEBUG-10
@@ -39,8 +66,28 @@ class Logger(object):
         self.section = None
         self._added_consumers = False
         
+    def add_consumer(self, level, consumer):
+        """
+        Add a new consumer to the logging.
+
+        `level` should be in self.LEVELS, and consumer should be a
+        file-like object or a function.
+        """
+        if level not in self.LEVELS:
+            raise TypeError(
+                "Level %r not in levels: %s" % (level, self.LEVELS))
+        self.consumers.append((level, consumer))
 
     def set_section(self, section):
+        """
+        This sets the current 'section' of the code.  A section is a
+        group of log messages which can be presented together.
+
+        This is typically done to give post-mortem logging information
+        of the greatest level of verbosity.  You can set the section,
+        and if there is any failure you can show the complete logs
+        from that section of code with ``logger.section_text()``.
+        """
         self.section = section
         self._section_logs = []
         self._section_color_logs = []
@@ -50,11 +97,22 @@ class Logger(object):
             self._added_consumers = True
 
     def remove_section(self):
+        """
+        Remove the section created with ``.set_section()``.
+        """
         self.section = None
         self._section_logs = self._section_color_logs = None
         ## FIXME: should remove consumers
 
     def section_text(self, color=None):
+        """
+        This returns all the text captured during the section, to be
+        displayed.
+
+        You can give a True/False value for `color` to get the
+        colorized version of the logs, or if you leave it as None it
+        uses the colorability of stdout.
+        """
         if not self.section:
             return
         if color is None:
@@ -75,18 +133,45 @@ class Logger(object):
     _append_section_color.color = True
 
     def debug(self, msg, *args, **kw):
+        """Send a message at level DEBUG (calls `log`)
+        """
         self.log(self.DEBUG, msg, *args, **kw)
     def info(self, msg, *args, **kw):
+        """Send a message at level INFO (calls `log`)
+        """
         self.log(self.INFO, msg, *args, **kw)
     def notify(self, msg, *args, **kw):
+        """Send a message at level NOTIFY (calls `log`)
+        """
         self.log(self.NOTIFY, msg, *args, **kw)
     def warn(self, msg, *args, **kw):
+        """Send a message at level WARN (calls `log`)
+        """
         self.log(self.WARN, msg, *args, **kw)
     def error(self, msg, *args, **kw):
+        """Send a message at level ERROR (calls `log`)
+        """
         self.log(self.WARN, msg, *args, **kw)
     def fatal(self, msg, *args, **kw):
+        """Send a message at level FATAL (calls `log`)
+        """
         self.log(self.FATAL, msg, *args, **kw)
     def log(self, level, msg, *args, **kw):
+        """
+        Log a message at the given level.
+
+        The level may be adjusted with `.level_adjust`, making it
+        render at a different level than it was sent at.  The level
+        may be a tuple of ``(lowest_level, largest_level)``, where if
+        the consumer is listening *below* ``lowest_level`` then the
+        message will not be emitted.  This can be used to avoid
+        redundancy.
+
+        If you give a keyword argument ``color``, then (if the
+        consumer supports it) the message will be displayed with the
+        given color.  Colors are space-separated strings like 'red',
+        'red_bg', etc. (see `ansi_codes` for a list).
+        """
         if 'color' in kw:
             color = kw.pop('color')
         else:
@@ -122,6 +207,10 @@ class Logger(object):
             self.logger.log(level, msg, *args, **kw)
 
     def adjusted_level(self, level):
+        """
+        Given any setting for `.level_adjust`, take the given level
+        and return the level it should be displayed at.
+        """
         if not self.level_adjust:
             return level
         if isinstance(level, tuple):
@@ -139,6 +228,16 @@ class Logger(object):
             return self.LEVELS[index]
 
     def start_progress(self, msg):
+        """
+        This starts an ongoing progress output, where dots will be
+        emitted to stdout using ``.show_progress()`` unless some log
+        message needs to be printed, at which point the dots will be
+        stopped gracefully.
+
+        Typically used like ``logger.start_progress('installing
+        package')``, then you call ``self.show_progress()`` emit dots
+        to indicate progress, and finally ``self.end_progress()``.
+        """
         assert not self.in_progress, (
             "Tried to start_progress(%r) while in_progress %r"
             % (msg, self.in_progress))
@@ -151,6 +250,9 @@ class Logger(object):
         self.in_progress = msg
 
     def end_progress(self, msg='done.'):
+        """
+        Ends the progress started with ``.start_progress()``
+        """
         assert self.in_progress, (
             "Tried to end_progress without start_progress")
         if self.stdout_level_matches(self.NOTIFY):
@@ -166,7 +268,7 @@ class Logger(object):
 
     def show_progress(self):
         """If we are in a progress scope, and no log messages have been
-        shown, write out another '.'"""
+        shown, write out another dot"""
         if self.in_progress_hanging:
             sys.stdout.write('.')
             sys.stdout.flush()

@@ -12,6 +12,12 @@ class CommandError(Exception):
         self.show_usage = show_usage
 
 class OptionParser(optparse.OptionParser):
+    """
+    Subclass of `optparse.OptionParser` which adds min/max positional arguments,
+    version loading from Setuptools distribution, and logging initialization.
+
+    Also see the `add_verbose` method for adding logging-related verbosity controls
+    """
 
     def __init__(self,
                  usage=None,
@@ -45,6 +51,14 @@ class OptionParser(optparse.OptionParser):
             add_help_option=add_help_option, prog=prog)
 
     def add_verbose(self, add_quiet=True, add_log=False):
+        """
+        Adds a ``--verbose/-v`` option.  If `add_quiet` is true (the
+        default) then ``--quiet/-q`` is also added.
+
+        If `add_log` is true (default false) then you may give a log
+        file, which will be logged to in addition to any normal
+        (stdout) logging.
+        """
         self.add_option(
             '-v', '--verbose',
             dest="verbosity",
@@ -66,11 +80,18 @@ class OptionParser(optparse.OptionParser):
                 help="Log verbosely to the given file")
 
     def get_default_values(self):
+        """
+        Overridden to make ``options`` a `CmdValues` instance, with
+        logger attributes.
+        """
         values = optparse.OptionParser.get_default_values(self)
         values = CmdValues(values.__dict__)
         return values
 
     def parse_args(self, args=None, values=None):
+        """
+        Overridden to do min/max argument checking.
+        """
         options, args = optparse.OptionParser.parse_args(self, args, values)
         error = None
         if self.min_args is not None and len(args) < self.min_args:
@@ -87,6 +108,10 @@ class OptionParser(optparse.OptionParser):
         return options, args
 
 class CmdValues(optparse.Values):
+
+    """
+    ``options`` is typically an instance of this class.
+    """
 
     _logger = None
     
@@ -122,6 +147,12 @@ class CmdValues(optparse.Values):
         return logger
 
 def run_main(main, parser, args=None):
+    """
+    Runs the `main` function, which should have a signature like
+    ``main(options, args)``, and should return an exit code (0 or None means success).
+
+    Also the `main` function can raise `CommandError`.
+    """
     if args is None:
         args = sys.argv[1:]
     try:
