@@ -1,0 +1,9 @@
+:mod:`cmdutils.log` -- Command Utility Logging
+==============================================
+
+.. automodule:: cmdutils.log
+
+Module Contents
+---------------
+
+.. autoclass:: Logger

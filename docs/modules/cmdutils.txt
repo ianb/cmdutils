@@ -1,0 +1,13 @@
+:mod:`cmdutils` -- Command utility framework
+============================================
+
+.. automodule:: cmdutils
+
+Module Contents
+---------------
+
+.. autoclass:: OptionParser
+.. autoclass:: CmdValues
+.. autofunction:: run_main
+.. autofunction:: main_func
+.. autoexception:: CommandError

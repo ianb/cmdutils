@@ -1,0 +1,7 @@
+CmdUtils News
+=============
+
+svn trunk
+---------
+
+* Still unreleased
