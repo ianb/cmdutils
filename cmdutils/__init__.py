@@ -75,12 +75,19 @@ class OptionParser(optparse.OptionParser):
                 help="Make the command quieter (use multiple times to increase quietness)",
                 action="count")
         if add_log:
-            self.add_option(
-                '-l', '--log',
-                dest="log_file",
-                metavar="FILENAME",
-                help="Log verbosely to the given file")
+            self.add_log()
 
+    def add_log(self):
+        """
+        Adds a ``--log/-l`` option. Expects a log file argument, which
+        will be logged to at VERBOSE in addition to any
+        normal (stdout) logging.
+        """
+        self.add_option(
+            '-l', '--log',
+            dest="log_file",
+            metavar="FILENAME",
+            help="Log verbosely to the given file")
         
     def get_default_values(self):
         """
