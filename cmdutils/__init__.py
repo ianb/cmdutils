@@ -1,4 +1,5 @@
 import optparse
+import os
 import sys
 from cmdutils.log import Logger
 
@@ -55,8 +56,9 @@ class OptionParser(optparse.OptionParser):
         Adds a ``--verbose/-v`` option.  If `add_quiet` is true (the
         default) then ``--quiet/-q`` is also added.
 
-        If `add_log` is true (default false) then you may give a log
-        file, which will be logged to in addition to any normal
+        If `add_log` is true (default false) then we also add a
+        ``--log/-l`` option. Expects a log file argument, which will
+        be logged to at maximum verbosity in addition to any normal
         (stdout) logging.
         """
         self.add_option(
@@ -74,11 +76,12 @@ class OptionParser(optparse.OptionParser):
                 action="count")
         if add_log:
             self.add_option(
-                '--log',
+                '-l', '--log',
                 dest="log_file",
                 metavar="FILENAME",
                 help="Log verbosely to the given file")
 
+        
     def get_default_values(self):
         """
         Overridden to make ``options`` a `CmdValues` instance, with
@@ -122,7 +125,7 @@ class CmdValues(optparse.Values):
         return self._logger
 
     def logger__set(self, value):
-        self._logger = logger
+        self._logger = value
 
     def logger__del(self):
         self._logger = None
@@ -143,7 +146,9 @@ class CmdValues(optparse.Values):
                 logger.notify('Creating directory for log file: %s' % log_dir)
                 os.makedirs(log_dir)
             f = open(log_file, 'a')
-            logger.consumers.append((Logger.LEVELS[-1], f))
+            logfile_level = min(Logger.level_for_integer(verbosity),
+                                Logger.DEBUG)
+            logger.consumers.append((logfile_level, f))
         return logger
 
 def run_main(main, parser, args=None):
