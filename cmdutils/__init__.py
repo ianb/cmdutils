@@ -77,7 +77,7 @@ class OptionParser(optparse.OptionParser):
         if add_log:
             self.add_log()
 
-    def add_log(self):
+    def add_log(self, log_file=None):
         """
         Adds a ``--log/-l`` option. Expects a log file argument, which
         will be logged to at VERBOSE in addition to any
@@ -87,7 +87,8 @@ class OptionParser(optparse.OptionParser):
             '-l', '--log',
             dest="log_file",
             metavar="FILENAME",
-            help="Log verbosely to the given file")
+            help="Log verbosely to the given file",
+            default=log_file)
         
     def get_default_values(self):
         """
