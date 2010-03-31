@@ -8,6 +8,7 @@ from cmdutils.log import Logger
 __all__ = ['add_logging', 'add_verbose', 'create_logger']
 
 def add_logging(arg_parser, log_file=None):
+    """Adds a logging argument to the given parser"""
     arg_parser.add_argument(
         '-l', '--log',
         dest='log_file',
@@ -16,6 +17,7 @@ def add_logging(arg_parser, log_file=None):
         default=log_file)
 
 def add_verbose(arg_parser, add_quiet=True, add_log=False):
+    """Adds --verbose/--quiet options to a parser"""
     arg_parser.add_argument(
         '-v', '--verbose',
         dest='verbosity',
@@ -33,6 +35,7 @@ def add_verbose(arg_parser, add_quiet=True, add_log=False):
             action="count")
 
 def create_logger(args):
+    """Creates a logger from an args option"""
     logger = Logger([])
     verbosity = Logger.LEVELS.index(Logger.NOTIFY)
     verbosity -= getattr(args, 'verbosity', 0)
