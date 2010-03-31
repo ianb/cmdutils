@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import sys, os
 
 version = '0.1.1'
 
@@ -7,6 +6,9 @@ setup(name='CmdUtils',
       version=version,
       description="Routines to help make command-line utilities easier to write",
       long_description="""\
+Some utilities for writing command-line utilities.
+
+This primarily implements a logging system for script output.
 """,
       classifiers=[
         'Development Status :: 4 - Beta',
@@ -17,14 +19,11 @@ setup(name='CmdUtils',
       keywords='command line option parsing optparse',
       author='Ian Bicking',
       author_email='ianb@colorstudy.com',
-      url='',
+      url='http://pythonpaste.org/cmdutils/',
       license='MIT',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=[
-          # -*- Extra requirements: -*-
-      ],
       entry_points="""
       [paste.paster_create_template]
       cmdutils = cmdutils.templates:CmdTemplate

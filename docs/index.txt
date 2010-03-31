@@ -25,3 +25,9 @@ CmdUtils because they are written to have zero dependencies).
 The primary feature is a logging object (:mod:`cmdutils.log`), and
 some small routines to set up logging (:mod:`cmdutils` has optparse
 code, and :mod:`cmdutils.arg` has argparse code).
+
+``paster create``
+-----------------
+
+You can do ``paster create -t cmdutils`` to set up a new project (this
+will use optparse, you'll have to hand-write your argparse setup).
