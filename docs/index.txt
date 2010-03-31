@@ -7,3 +7,21 @@ Contents:
 
    license
    news
+   modules/cmdutils
+   modules/log
+   modules/arg
+   repository <http://bitbucket.org/ianb/cmdutils/>
+   issues <http://bitbucket.org/ianb/cmdutils/issues/>
+
+What Is CmdUtils?
+-----------------
+
+CmdUtils has some helpers for writing command-line programs.  The
+general style of output and API is the same as used in `virtualenv
+<http://virtualenv.openplans.org>`_ and `pip
+<http://pip.openplans.org>`_ (though these packages don't require
+CmdUtils because they are written to have zero dependencies).
+
+The primary feature is a logging object (:mod:`cmdutils.log`), and
+some small routines to set up logging (:mod:`cmdutils` has optparse
+code, and :mod:`cmdutils.arg` has argparse code).

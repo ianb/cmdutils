@@ -7,6 +7,7 @@ from cmdutils.log import Logger
 
 __all__ = ['add_logging', 'add_verbose', 'create_logger']
 
+
 def add_logging(arg_parser, log_file=None):
     """Adds a logging argument to the given parser"""
     arg_parser.add_argument(
@@ -15,6 +16,7 @@ def add_logging(arg_parser, log_file=None):
         metavar='FILENAME',
         help='Log verbosely to the given file',
         default=log_file)
+
 
 def add_verbose(arg_parser, add_quiet=True, add_log=False):
     """Adds --verbose/--quiet options to a parser"""
@@ -33,6 +35,7 @@ def add_verbose(arg_parser, add_quiet=True, add_log=False):
             "to increase quietness)",
             default=0,
             action="count")
+
 
 def create_logger(args):
     """Creates a logger from an args option"""

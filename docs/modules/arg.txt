@@ -1,0 +1,11 @@
+:mod:`cmdutils.arg` -- Command Utility argparser
+================================================
+
+.. automodule:: cmdutils.arg
+
+Module Contents
+---------------
+
+.. autofunction:: add_logging
+.. autofunction:: add_verbose
+.. autofunction:: create_logger

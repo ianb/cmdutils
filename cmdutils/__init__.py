@@ -3,6 +3,7 @@ import os
 import sys
 from cmdutils.log import Logger
 
+
 class CommandError(Exception):
     """
     Raised whenever there's some user error, to show the error to the
@@ -11,6 +12,7 @@ class CommandError(Exception):
     def __init__(self, msg, show_usage=True):
         Exception.__init__(self, msg)
         self.show_usage = show_usage
+
 
 class OptionParser(optparse.OptionParser):
     """
@@ -89,7 +91,7 @@ class OptionParser(optparse.OptionParser):
             metavar="FILENAME",
             help="Log verbosely to the given file",
             default=log_file)
-        
+
     def get_default_values(self):
         """
         Overridden to make ``options`` a `CmdValues` instance, with
@@ -118,6 +120,7 @@ class OptionParser(optparse.OptionParser):
             self.error(error)
         return options, args
 
+
 class CmdValues(optparse.Values):
 
     """
@@ -125,7 +128,7 @@ class CmdValues(optparse.Values):
     """
 
     _logger = None
-    
+
     def logger__get(self):
         if self._logger is not None:
             return self._logger
@@ -159,6 +162,7 @@ class CmdValues(optparse.Values):
             logger.consumers.append((logfile_level, f))
         return logger
 
+
 def run_main(main, parser, args=None):
     """
     Runs the `main` function, which should have a signature like
@@ -177,13 +181,15 @@ def run_main(main, parser, args=None):
             parser.print_help()
         logger = getattr(options, 'logger', None)
         if logger:
-            import traceback, StringIO
+            import traceback
+            import StringIO
             out = StringIO.StringIO()
             traceback.print_exc(file=out)
             logger.debug('Failing exception:\n%s' % out.getvalue())
         result = 3
     if result:
         sys.exit(result)
+
 
 def main_func(parser):
     """
@@ -198,4 +204,3 @@ def main_func(parser):
             run_main(func, parser, args)
         return main
     return decorator
-

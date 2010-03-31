@@ -6,6 +6,7 @@ import logging
 import sys
 import os
 
+
 class Logger(object):
 
     """
@@ -65,7 +66,7 @@ class Logger(object):
             self.logger = logging_name
         self.section = None
         self._added_consumers = False
-        
+
     def add_consumer(self, level, consumer):
         """
         Add a new consumer to the logging.
@@ -136,26 +137,32 @@ class Logger(object):
         """Send a message at level DEBUG (calls `log`)
         """
         self.log(self.DEBUG, msg, *args, **kw)
+
     def info(self, msg, *args, **kw):
         """Send a message at level INFO (calls `log`)
         """
         self.log(self.INFO, msg, *args, **kw)
+
     def notify(self, msg, *args, **kw):
         """Send a message at level NOTIFY (calls `log`)
         """
         self.log(self.NOTIFY, msg, *args, **kw)
+
     def warn(self, msg, *args, **kw):
         """Send a message at level WARN (calls `log`)
         """
         self.log(self.WARN, msg, *args, **kw)
+
     def error(self, msg, *args, **kw):
         """Send a message at level ERROR (calls `log`)
         """
         self.log(self.WARN, msg, *args, **kw)
+
     def fatal(self, msg, *args, **kw):
         """Send a message at level FATAL (calls `log`)
         """
         self.log(self.FATAL, msg, *args, **kw)
+
     def log(self, level, msg, *args, **kw):
         """
         Log a message at the given level.
@@ -375,6 +382,7 @@ ansi_codes = dict(
     white_bg=47,
     default_bg=49,
     )
+
 
 def string_to_ansi(string):
     parts = string.split()
